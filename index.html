@@ -53,14 +53,39 @@
         let cur_page = 1;
         let start = 1;
         let end = per_page;
-        let total_pages = 37;
+        let total_pages = 5;
 
         var t_image = (dir, filename) => `
             <div class="photo">                
-                <img src="${dir + filename}" alt="">
-                <h5>${filename}</h5>
+                <img data-src="${dir + filename}" alt="${filename}">
+                <h5></h5>
             </div>
         `
+        function my_lazy_load(){
+            var images = document.querySelectorAll('img');
+            var filenames = document.querySelectorAll('h5');
+            var index = 0;
+            var lazyLoad = function() {	
+                if(index >= images.length) return;
+                var image = images[index];	
+                var filename = filenames[index];	
+                if((this.scrollY + this.innerHeight) > image.offsetTop) {			
+                    var src = image.getAttribute("data-src");
+                    filename.innerHTML = image.getAttribute("alt")
+                    image.src = src;
+                    image.addEventListener('load', function() {
+                        image.removeAttribute('data-src');    	 
+                    });     	
+                    index++;
+                    lazyLoad();
+                }
+            };
+            var init = function() {
+                window.addEventListener('scroll', lazyLoad);
+                lazyLoad();
+            };
+            return init();
+        }
         async function get_image(dir, filename, index) {
             let myObject = await fetch(dir + filename);
             if (myObject.status != 404) {
@@ -97,7 +122,7 @@
             document.getElementById('page-info-top').innerHTML = cur_page;
             document.getElementById('page-info-bottom').innerHTML = cur_page;
             document.getElementById('column_0').innerHTML = '';
-            getMultipleText(start, end).then(() => {})
+            getMultipleText(start, end).then(() => {my_lazy_load()})
         })
         btn_prev_top.addEventListener('click', () => {
             cur_page--;
@@ -113,7 +138,7 @@
             document.getElementById('page-info-top').innerHTML = cur_page;
             document.getElementById('page-info-bottom').innerHTML = cur_page;
             document.getElementById('column_0').innerHTML = '';
-            getMultipleText(start, end).then(() => {})
+            getMultipleText(start, end).then(() => {my_lazy_load()})
         })
         const btn_next_bottom = document.querySelector('.btn-next-bottom');
         const btn_prev_bottom = document.querySelector('.btn-prev-bottom');
@@ -130,7 +155,7 @@
             document.getElementById('page-info-top').innerHTML = cur_page;
             document.getElementById('page-info-bottom').innerHTML = cur_page;
             document.getElementById('column_0').innerHTML = '';
-            getMultipleText(start, end).then(() => {})
+            getMultipleText(start, end).then(() => {my_lazy_load()})
         })
         btn_prev_bottom.addEventListener('click', () => {
             cur_page--;
@@ -146,10 +171,12 @@
             document.getElementById('page-info-top').innerHTML = cur_page;
             document.getElementById('page-info-bottom').innerHTML = cur_page;
             document.getElementById('column_0').innerHTML = '';
-            getMultipleText(start, end).then(() => {})
+            getMultipleText(start, end).then(() => {my_lazy_load()})
         })
         document.getElementById('column_0').innerHTML = ''
-        getMultipleText(start, per_page).then(() => {})
+        getMultipleText(start, per_page).then(() => {
+            my_lazy_load()
+        })
     </script>
 </body>
 </html>
