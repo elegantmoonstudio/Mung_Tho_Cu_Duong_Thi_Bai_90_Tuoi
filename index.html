@@ -55,42 +55,21 @@
         let end = per_page;
         let total_pages = 5;
 
-        var t_image = (dir, filename) => `
+        var t_image = (dir, filename, lazy_property) => `
             <div class="photo">                
-                <img data-src="${dir + filename}" alt="${filename}">
-                <h5></h5>
+                <img src="${dir + filename}" alt="${filename}" ${lazy_property}>
+                <h5>${filename}</h5>
             </div>
         `
-        function my_lazy_load(){
-            var images = document.querySelectorAll('img');
-            var filenames = document.querySelectorAll('h5');
-            var index = 0;
-            var lazyLoad = function() {	
-                if(index >= images.length) return;
-                var image = images[index];	
-                var filename = filenames[index];	
-                if((this.scrollY + this.innerHeight) > image.offsetTop) {			
-                    var src = image.getAttribute("data-src");
-                    filename.innerHTML = image.getAttribute("alt")
-                    image.src = src;
-                    image.addEventListener('load', function() {
-                        image.removeAttribute('data-src');    	 
-                    });     	
-                    index++;
-                    lazyLoad();
-                }
-            };
-            var init = function() {
-                window.addEventListener('scroll', lazyLoad);
-                lazyLoad();
-            };
-            return init();
-        }
-        async function get_image(dir, filename, index) {
+        async function get_image(dir, filename, image_index, index) {
             let myObject = await fetch(dir + filename);
             if (myObject.status != 404) {
                 var column_name = "column_" + index;
-                document.getElementById('column_0').innerHTML += t_image(dir, filename)
+                lazy_data = 'loading="eager"'
+                if (image_index > 3){
+                    lazy_data = 'loading="lazy"'
+                }
+                document.getElementById('column_0').innerHTML += t_image(dir, filename, lazy_data)
             }
         }
         async function getMultipleText(start, end) {
@@ -104,7 +83,7 @@
                 if (i > 1600){
                     dir = dir3
                 }
-                await get_image(dir, "img (" + i + ").jpg", index);
+                await get_image(dir, "img (" + i + ").jpg", i, index);
             }
         }
         const btn_next_top = document.querySelector('.btn-next-top');
@@ -122,7 +101,7 @@
             document.getElementById('page-info-top').innerHTML = cur_page;
             document.getElementById('page-info-bottom').innerHTML = cur_page;
             document.getElementById('column_0').innerHTML = '';
-            getMultipleText(start, end).then(() => {my_lazy_load()})
+            getMultipleText(start, end).then(() => {})
         })
         btn_prev_top.addEventListener('click', () => {
             cur_page--;
@@ -138,7 +117,7 @@
             document.getElementById('page-info-top').innerHTML = cur_page;
             document.getElementById('page-info-bottom').innerHTML = cur_page;
             document.getElementById('column_0').innerHTML = '';
-            getMultipleText(start, end).then(() => {my_lazy_load()})
+            getMultipleText(start, end).then(() => {})
         })
         const btn_next_bottom = document.querySelector('.btn-next-bottom');
         const btn_prev_bottom = document.querySelector('.btn-prev-bottom');
@@ -155,7 +134,7 @@
             document.getElementById('page-info-top').innerHTML = cur_page;
             document.getElementById('page-info-bottom').innerHTML = cur_page;
             document.getElementById('column_0').innerHTML = '';
-            getMultipleText(start, end).then(() => {my_lazy_load()})
+            getMultipleText(start, end).then(() => {})
         })
         btn_prev_bottom.addEventListener('click', () => {
             cur_page--;
@@ -171,12 +150,10 @@
             document.getElementById('page-info-top').innerHTML = cur_page;
             document.getElementById('page-info-bottom').innerHTML = cur_page;
             document.getElementById('column_0').innerHTML = '';
-            getMultipleText(start, end).then(() => {my_lazy_load()})
+            getMultipleText(start, end).then(() => {})
         })
         document.getElementById('column_0').innerHTML = ''
-        getMultipleText(start, per_page).then(() => {
-            my_lazy_load()
-        })
+        getMultipleText(start, per_page).then(() => {})
     </script>
 </body>
 </html>
